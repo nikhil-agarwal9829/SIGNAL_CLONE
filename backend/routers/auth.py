@@ -83,8 +83,8 @@ def verify_otp(data: VerifyOTPRequest, response: Response, db: Session = Depends
         key="session_token",
         value=token,
         httponly=True,
-        secure=False,  # Set True in production (HTTPS)
-        samesite="lax",
+        secure=True,  # Set True in production (HTTPS)
+        samesite="none",
         max_age=30 * 24 * 60 * 60  # 30 days
     )
 

@@ -128,7 +128,7 @@ export default function Home() {
 
     const init = async () => {
       try {
-        const profileRes = await fetch("http://localhost:8000/api/auth/profile", {credentials: "include"});
+        const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/profile", {credentials: "include"});
         if (profileRes.ok) {
            const pData = await profileRes.json();
            setCurrentUser(pData);
@@ -140,7 +140,7 @@ export default function Home() {
            return;
         }
 
-        const res = await fetch("http://localhost:8000/api/conversations/", {credentials: "include"});
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/conversations/", {credentials: "include"});
         if (!mounted) return;
         if (res.ok) {
           const data = await res.json();
@@ -148,13 +148,13 @@ export default function Home() {
         }
 
         // Fetch contacts for group creation
-        const contactsRes = await fetch("http://localhost:8000/api/contacts/", {credentials: "include"});
+        const contactsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/contacts/", {credentials: "include"});
         if (contactsRes.ok) {
             const cData = await contactsRes.json();
             setContacts(cData);
         }
         
-        websocket = new WebSocket("ws://localhost:8000/ws");
+        websocket = new WebSocket((process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000/ws"));
         
         websocket.onmessage = (event) => {
           const wsData = JSON.parse(event.data);
@@ -172,7 +172,7 @@ export default function Home() {
             setMessages((prev) => {
               if (activeConvRef.current && msg.conversation_id === activeConvRef.current.id) {
                 // If it's the active conversation, mark as read immediately
-                fetch(`http://localhost:8000/api/conversations/${msg.conversation_id}/read`, {method: 'POST', credentials: 'include'});
+                fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/conversations/${msg.conversation_id}/read`, {method: 'POST', credentials: 'include'});
                 return [...prev, msg];
               }
               return prev;
@@ -220,7 +220,7 @@ export default function Home() {
 
   const fetchConversations = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/conversations/", {credentials: "include"});
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/conversations/", {credentials: "include"});
       if (res.ok) {
         const data = await res.json();
         setConversations(data);
@@ -238,8 +238,8 @@ export default function Home() {
     setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unread_count: 0 } : c));
     
     try {
-      await fetch(`http://localhost:8000/api/conversations/${conv.id}/read`, {method: "POST", credentials: "include"});
-      const res = await fetch(`http://localhost:8000/api/conversations/${conv.id}/messages`, {credentials: "include"});
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/conversations/${conv.id}/read`, {method: "POST", credentials: "include"});
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/conversations/${conv.id}/messages`, {credentials: "include"});
       const data = await res.json();
       setMessages(data);
     } catch (err) {
@@ -272,7 +272,7 @@ export default function Home() {
   const handleAddContact = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:8000/api/contacts/", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/contacts/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: newContactPhone }),
@@ -280,7 +280,7 @@ export default function Home() {
       });
       if (res.ok) {
         const contact = await res.json();
-        await fetch("http://localhost:8000/api/conversations/direct", {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/conversations/direct", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ contact_user_id: contact.contact_user_id }),
@@ -301,7 +301,7 @@ export default function Home() {
       e.preventDefault();
       if (!groupName.trim() || selectedContactIds.size === 0) return;
       try {
-          const res = await fetch("http://localhost:8000/api/conversations/group", {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/conversations/group", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ name: groupName, member_ids: Array.from(selectedContactIds) }),
@@ -321,7 +321,7 @@ export default function Home() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-        const res = await fetch("http://localhost:8000/api/auth/profile", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/profile", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ display_name: editName, about: editAbout, avatar_url: editAvatar }),
@@ -337,7 +337,7 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
-    await fetch("http://localhost:8000/api/auth/logout", { method: "POST", credentials: "include" });
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/logout", { method: "POST", credentials: "include" });
     router.push("/login");
   };
 
