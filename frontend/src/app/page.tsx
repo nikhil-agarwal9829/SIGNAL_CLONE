@@ -179,7 +179,7 @@ export default function Home() {
             });
             fetchConversations();
           }
-          else if (wsData.type === `typing") {
+          else if (wsData.type === "typing") {
              if (activeConvRef.current && wsData.conversation_id === activeConvRef.current.id) {
                  const typing_user_id = wsData.user_id;
                  setTypingUsers(prev => {
